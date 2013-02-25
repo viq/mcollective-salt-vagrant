@@ -1,18 +1,20 @@
+# set this to the amount of clusters
+# you'd like to create
+clusters = 2
+
 if Facter.hostname =~ /(\d+)$/
-    hostname = $1.to_i
+  hostname = $1.to_i
+else
+  hostname = 0
+end
 
-    # set this to the amount of clusters
-    # you'd like to create
-    clusters = 2
+natoalpha = ["alfa", "bravo", "charlie", "delta", "echo", "foxtrot", "golf", "hotel",
+             "india", "juliet", "kilo", "lima", "mike", "november", "oscar", "papa",
+             "quebec", "romeo", "sierra", "tango", "uniform", "victor", "whiskey",
+             "xray", "yankee", "zulu"]
 
-    natoalpha = ["alfa", "bravo", "charlie", "delta", "echo", "foxtrot", "golf", "hotel",
-                 "india", "juliet", "kilo", "lima", "mike", "november", "oscar", "papa",
-                 "quebec", "romeo", "sierra", "tango", "uniform", "victor", "whiskey",
-                 "xray", "yankee", "zulu"]
+cluster = natoalpha[hostname % clusters]
 
-    cluster = natoalpha[hostname % clusters]
-
-    Facter.add(:cluster) do
-        setcode { cluster }
-    end
+Facter.add(:cluster) do
+  setcode { cluster }
 end

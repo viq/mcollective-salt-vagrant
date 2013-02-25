@@ -13,8 +13,17 @@ class mcollective::config {
       content => template("mcollective/client.cfg.erb")
    }
 
+   file{"/etc/mcollective/inventory.mc":
+      owner => root,
+      group => root,
+      mode  => 0444,
+      source => "puppet:///modules/mcollective/inventory.mc"
+   }
+
    file{"/usr/libexec/mcollective/mcollective":
-      recurse => true,
+      owner => root,
+      group => root,
+      mode  => 0444,
       source => "puppet:///modules/mcollective/lib"
    }
 

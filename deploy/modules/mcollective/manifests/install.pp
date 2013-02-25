@@ -8,7 +8,7 @@ class mcollective::install {
            "mcollective-process-agent", "mcollective-process-client",
            "mcollective-nettest-agent", "mcollective-nettest-client",
            "mcollective-urltest-agent", "mcollective-urltest-client",
-           "gnuplot", "rubygem-redis"]:
+           "gnuplot", "rubygem-redis", "rubygem-formatr"]:
                ensure => latest
   }
 }
