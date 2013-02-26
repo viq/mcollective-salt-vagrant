@@ -20,10 +20,4 @@ class nagios {
         ensure => present,
         command => "check_load -w 1.5,1.5,1.5 -c 2,2,2"
     }
-
-    file{"/etc/mcollective/plugin.d/nrpe.cfg":
-        content => "conf_dir=/etc/nrpe.d",
-        require => Class["mcollective::install"],
-        notify => Class["mcollective::service"]
-    }
 }

@@ -24,6 +24,7 @@ class mcollective::config {
       owner => root,
       group => root,
       mode  => 0444,
+      recurse => true,
       source => "puppet:///modules/mcollective/lib"
    }
 
