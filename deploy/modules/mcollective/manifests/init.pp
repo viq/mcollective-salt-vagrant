@@ -10,6 +10,7 @@ class mcollective {
   class{"mcollective::agent::filemgr": }
   class{"mcollective::agent::process": }
   class{"mcollective::agent::nettest": }
+  class{"mcollective::agent::integration": }
   class{"mcollective::agent::nrpe": conf_dir => "/etc/nrpe.d"}
   class{"mcollective::agent::urltest": syslocation => $hostname}
 
