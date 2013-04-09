@@ -3,7 +3,7 @@ class mcollective::agent::integration (
 ) {
     mcollective::plugin{"integration":
         type    => agent,
-        ensure  => $version.
+        ensure  => $version,
         client  => false
     }
 }
