@@ -3,6 +3,11 @@ class mcollective::install {
       ensure => latest
   }
 
+  package{"mcollective-test":
+      provider => "gem",
+      ensure => "present"
+  }
+
   package{"rspec":
       provider => "gem",
       ensure   => "2.12.0"
