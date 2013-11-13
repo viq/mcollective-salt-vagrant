@@ -17,14 +17,16 @@ MEMORY=384
 # be the prefix to the subnet they use
 SUBNET="192.168.2"
 
-Vagrant::Config.run do |config|
+Vagrant.configure("2") do |config|
   config.vm.define :middleware do |vmconfig|
     vmconfig.vm.box = "centos_6_3_x86_64"
-    vmconfig.vm.network :hostonly, "#{SUBNET}.10"
+    vmconfig.vm.network :private_network, ip: "#{SUBNET}.10"
     vmconfig.vm.host_name = "middleware.#{DOMAIN}"
-    vmconfig.vm.customize ["modifyvm", :id, "--memory", MEMORY]
+    vmconfig.vm.provider :virtualbox do |vb|
+        vb.customize ["modifyvm", :id, "--memory", MEMORY]
+    end
     vmconfig.vm.box = "centos_6_3_x86_64"
-    vmconfig.vm.box_url = "https://dl.dropbox.com/u/7225008/Vagrant/CentOS-6.3-x86_64-minimal.box"
+    vmconfig.vm.box_url = "http://developer.nrel.gov/downloads/vagrant-boxes/CentOS-6.3-x86_64-v20130101.box"
 
     vmconfig.vm.provision :puppet, :options => ["--pluginsync"], :module_path => "deploy/modules" do |puppet|
       puppet.manifests_path = "deploy"
@@ -35,11 +37,13 @@ Vagrant::Config.run do |config|
   INSTANCES.times do |i|
     config.vm.define "node#{i}".to_sym do |vmconfig|
       vmconfig.vm.box = "centos_6_3_x86_64"
-      vmconfig.vm.network :hostonly, "#{SUBNET}.%d" % (10 + i + 1)
-      vmconfig.vm.customize ["modifyvm", :id, "--memory", MEMORY]
+      vmconfig.vm.network :private_network, ip: "#{SUBNET}.%d" % (10 + i + 1)
+      vmconfig.vm.provider :virtualbox do |vb|
+          vb.customize ["modifyvm", :id, "--memory", MEMORY]
+      end
       vmconfig.vm.host_name = "node%d.#{DOMAIN}" % i
       vmconfig.vm.box = "centos_6_3_x86_64"
-      vmconfig.vm.box_url = "https://dl.dropbox.com/u/7225008/Vagrant/CentOS-6.3-x86_64-minimal.box"
+      vmconfig.vm.box_url = "http://developer.nrel.gov/downloads/vagrant-boxes/CentOS-6.3-x86_64-v20130101.box"
 
       vmconfig.vm.provision :puppet, :options => ["--pluginsync"], :module_path => "deploy/modules" do |puppet|
         puppet.manifests_path = "deploy"
