@@ -24,9 +24,9 @@ class nrpe(
   $recurse       = undef,
 ) inherits nrpe::params {
 
-  package { 'nrpe_packages':
+  package { $nrpe::params::nrpe_packages:
     ensure   => installed,
-    name     => $nrpe::params::nrpe_packages,
+    before   => [Service['nrpe_service'],File['nrpe_include_dir']],
     provider => $nrpe::params::nrpe_provider,
   }
 
@@ -34,7 +34,6 @@ class nrpe(
     ensure    => running,
     name      => $nrpe::params::nrpe_service,
     enable    => true,
-    require   => Package['nrpe_packages'],
     subscribe => File['nrpe_config'],
   }
 
@@ -49,7 +48,6 @@ class nrpe(
     name    => $nrpe::params::nrpe_include_dir,
     purge   => $purge,
     recurse => $recurse,
-    require => Package['nrpe_packages'],
   }
 
 }
