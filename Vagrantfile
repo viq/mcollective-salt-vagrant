@@ -28,7 +28,7 @@ Vagrant.configure("2") do |config|
     vmconfig.vm.box = "centos_6_3_x86_64"
     vmconfig.vm.box_url = "http://developer.nrel.gov/downloads/vagrant-boxes/CentOS-6.3-x86_64-v20130101.box"
 
-    vmconfig.vm.provision :puppet, :options => ["--pluginsync"], :module_path => "deploy/modules" do |puppet|
+    vmconfig.vm.provision :puppet, :options => ["--pluginsync"], :module_path => "deploy/modules", :facter => { "middleware_ip" => "#{SUBNET}.10" } do |puppet|
       puppet.manifests_path = "deploy"
       puppet.manifest_file = "site.pp"
     end
@@ -45,7 +45,7 @@ Vagrant.configure("2") do |config|
       vmconfig.vm.box = "centos_6_3_x86_64"
       vmconfig.vm.box_url = "http://developer.nrel.gov/downloads/vagrant-boxes/CentOS-6.3-x86_64-v20130101.box"
 
-      vmconfig.vm.provision :puppet, :options => ["--pluginsync"], :module_path => "deploy/modules" do |puppet|
+      vmconfig.vm.provision :puppet, :options => ["--pluginsync"], :module_path => "deploy/modules", :facter => { "middleware_ip" => "#{SUBNET}.10" } do |puppet|
         puppet.manifests_path = "deploy"
         puppet.manifest_file = "site.pp"
       end
