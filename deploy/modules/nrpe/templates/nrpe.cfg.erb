@@ -27,7 +27,7 @@ log_facility=daemon
 # number.  The file is only written if the NRPE daemon is started by the root
 # user and is running in standalone mode.
 
-pid_file=<%= nrpe_pid_file %>
+pid_file=<%= @nrpe_pid_file %>
 
 
 
@@ -55,7 +55,7 @@ server_port=5666
 # 
 # NOTE: This option is ignored if NRPE is running under either inetd or xinetd
 
-nrpe_user=<%= nrpe_user %>
+nrpe_user=<%= @nrpe_user %>
 
 
 
@@ -65,7 +65,7 @@ nrpe_user=<%= nrpe_user %>
 # 
 # NOTE: This option is ignored if NRPE is running under either inetd or xinetd
 
-nrpe_group=<%= nrpe_group %>
+nrpe_group=<%= @nrpe_group %>
 
 
 
@@ -81,7 +81,7 @@ nrpe_group=<%= nrpe_group %>
 # NOTE: This option is ignored if NRPE is running under either inetd or xinetd
 
 #allowed_hosts=127.0.0.1
-allowed_hosts=<%= allowed_hosts.join(',') %>
+allowed_hosts=<%= @allowed_hosts.join(',') %>
  
 
 
@@ -228,5 +228,5 @@ connection_timeout=300
 # you can place your config snipplets into nrpe.d/
 # only snipplets ending in .cfg will get included
 #include_dir=/etc/nagios/nrpe.d/
-include_dir=<%= nrpe_include_dir %>
+include_dir=<%= @nrpe_include_dir %>
 
