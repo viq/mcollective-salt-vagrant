@@ -12,7 +12,7 @@ direct_addressing = yes
 direct_addressing_threshold = 5
 
 connector = redis
-plugin.redis.host = 192.168.2.10
+plugin.redis.host = <%= @middleware_ip %>
 
 factsource = yaml
 plugin.yaml = /etc/mcollective/facts.yaml

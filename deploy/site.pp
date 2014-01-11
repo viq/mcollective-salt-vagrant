@@ -15,6 +15,6 @@ node default {
   }
 
   host{"puppet":
-    ip => "192.168.2.10"
+    ip => $::middleware_ip
   }
 }
