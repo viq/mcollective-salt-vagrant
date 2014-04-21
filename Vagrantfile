@@ -21,7 +21,7 @@ Vagrant.configure("2") do |config|
   config.vm.define :middleware do |vmconfig|
     vmconfig.vm.box = "centos_6_3_x86_64"
     vmconfig.vm.network :private_network, ip: "#{SUBNET}.10"
-    vmconfig.vm.host_name = "middleware.#{DOMAIN}"
+    vmconfig.vm.hostname = "middleware.#{DOMAIN}"
     vmconfig.vm.provider :virtualbox do |vb|
         vb.customize ["modifyvm", :id, "--memory", MEMORY]
     end
@@ -41,7 +41,7 @@ Vagrant.configure("2") do |config|
       vmconfig.vm.provider :virtualbox do |vb|
           vb.customize ["modifyvm", :id, "--memory", MEMORY]
       end
-      vmconfig.vm.host_name = "node%d.#{DOMAIN}" % i
+      vmconfig.vm.hostname = "node%d.#{DOMAIN}" % i
       vmconfig.vm.box = "centos_6_3_x86_64"
       vmconfig.vm.box_url = "http://developer.nrel.gov/downloads/vagrant-boxes/CentOS-6.3-x86_64-v20130101.box"
 
