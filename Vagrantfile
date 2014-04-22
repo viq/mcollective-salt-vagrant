@@ -17,6 +17,14 @@ MEMORY=384
 # be the prefix to the subnet they use
 SUBNET="192.168.2"
 
+$set_puppet_version = <<EOF
+/bin/rpm -Uvh http://yum.puppetlabs.com/el/6x/products/x86_64/puppetlabs-release-6-10.noarch.rpm
+/usr/bin/yum clean all
+/usr/bin/yum makecache
+/usr/bin/yum -y erase puppet
+/usr/bin/yum -y install puppet-3.1.0-1.el6
+EOF
+
 Vagrant.configure("2") do |config|
   config.vm.define :middleware do |vmconfig|
     vmconfig.vm.box = "centos_6_3_x86_64"
@@ -27,8 +35,8 @@ Vagrant.configure("2") do |config|
     end
     vmconfig.vm.box = "centos_6_3_x86_64"
     vmconfig.vm.box_url = "http://developer.nrel.gov/downloads/vagrant-boxes/CentOS-6.3-x86_64-v20130101.box"
-
-    vmconfig.vm.provision :puppet, :options => ["--pluginsync"], :module_path => "deploy/modules", :facter => { "middleware_ip" => "#{SUBNET}.10" } do |puppet|
+    vmconfig.vm.provision :shell, :inline => $set_puppet_version
+    vmconfig.vm.provision :puppet, :options => ["--pluginsync --hiera_config /vagrant/deploy/hiera.yaml"], :module_path => "deploy/modules", :facter => { "middleware_ip" => "#{SUBNET}.10" } do |puppet|
       puppet.manifests_path = "deploy"
       puppet.manifest_file = "site.pp"
     end
@@ -45,7 +53,7 @@ Vagrant.configure("2") do |config|
       vmconfig.vm.box = "centos_6_3_x86_64"
       vmconfig.vm.box_url = "http://developer.nrel.gov/downloads/vagrant-boxes/CentOS-6.3-x86_64-v20130101.box"
 
-      vmconfig.vm.provision :puppet, :options => ["--pluginsync"], :module_path => "deploy/modules", :facter => { "middleware_ip" => "#{SUBNET}.10" } do |puppet|
+      vmconfig.vm.provision :puppet, :options => ["--pluginsync --hiera_config /vagrant/deploy/hiera.yaml"], :module_path => "deploy/modules", :facter => { "middleware_ip" => "#{SUBNET}.10" } do |puppet|
         puppet.manifests_path = "deploy"
         puppet.manifest_file = "site.pp"
       end
