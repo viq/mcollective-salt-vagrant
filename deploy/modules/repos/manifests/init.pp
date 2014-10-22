@@ -31,7 +31,7 @@ class repos {
       enabled        => '1',
       failovermethod => 'priority',
       gpgcheck       => '0',
-      mirrorlist     => 'https://mirrors.fedoraproject.org/metalink?repo=epel-6&arch=$basearch',
+      mirrorlist     => 'http://mirrors.fedoraproject.org/metalink?repo=epel-6&arch=$basearch',
   }
 
   Class["repos"] -> Package <| |>
