@@ -1,6 +1,8 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+require 'vagrant-hostmanager'
+
 # apart from the middleware node, create
 # this many nodes in addition to the middleware
 INSTANCES=5
@@ -26,18 +28,34 @@ $set_puppet_version = <<EOF
 EOF
 
 Vagrant.configure("2") do |config|
+  config.hostmanager.enabled = true
+  config.hostmanager.manage_host = true
   config.vm.define :middleware do |vmconfig|
     vmconfig.vm.network :private_network, ip: "#{SUBNET}.10"
-    vmconfig.vm.hostname = "middleware.#{DOMAIN}"
+    vmconfig.vm.hostname = "middleware"
+    vmconfig.hostmanager.aliases = "salt"
     vmconfig.vm.provider :virtualbox do |vb|
         vb.customize ["modifyvm", :id, "--memory", MEMORY]
     end
     vmconfig.vm.box = "centos_6_5_x86_64"
     vmconfig.vm.box_url = "http://developer.nrel.gov/downloads/vagrant-boxes/CentOS-6.5-x86_64-v20140504.box"
+    vmconfig.vm.provision :hostmanager
     vmconfig.vm.provision :shell, :inline => $set_puppet_version
     vmconfig.vm.provision :puppet, :options => ["--pluginsync --hiera_config /vagrant/deploy/hiera.yaml"], :module_path => "deploy/modules", :facter => { "middleware_ip" => "#{SUBNET}.10" } do |puppet|
       puppet.manifests_path = "deploy"
       puppet.manifest_file = "site.pp"
+    end
+    vmconfig.vm.provision :salt do |salt|
+      salt.install_type = "stable"
+      salt.install_master = true
+      salt.always_install = false
+      salt.master_key = "deploy/salt_keys/master.pem"
+      salt.master_pub = "deploy/salt_keys/master.pub"
+      salt.minion_key = "deploy/salt_keys/minion.pem"
+      salt.minion_pub = "deploy/salt_keys/minion.pub"
+      salt.seed_master = { middleware: salt.minion_pub, node0: salt.minion_pub, node1: salt.minion_pub, node2: salt.minion_pub, node3: salt.minion_pub, node4: salt.minion_pub }
+      salt.temp_config_dir = "/tmp"
+      salt.run_highstate = true
     end
   end
 
@@ -47,12 +65,19 @@ Vagrant.configure("2") do |config|
       vmconfig.vm.provider :virtualbox do |vb|
           vb.customize ["modifyvm", :id, "--memory", MEMORY]
       end
-      vmconfig.vm.hostname = "node%d.#{DOMAIN}" % i
+      vmconfig.vm.hostname = "node%d" % i
       vmconfig.vm.box = "centos_6_5_x86_64"
       vmconfig.vm.box_url = "http://developer.nrel.gov/downloads/vagrant-boxes/CentOS-6.5-x86_64-v20140504.box"
+      vmconfig.vm.provision :hostmanager
       vmconfig.vm.provision :puppet, :options => ["--pluginsync --hiera_config /vagrant/deploy/hiera.yaml"], :module_path => "deploy/modules", :facter => { "middleware_ip" => "#{SUBNET}.10" } do |puppet|
         puppet.manifests_path = "deploy"
         puppet.manifest_file = "site.pp"
+      end
+      vmconfig.vm.provision :salt do |salt|
+        salt.install_type = "stable"
+        salt.always_install = false
+        salt.minion_key = "deploy/salt_keys/minion.pem"
+        salt.minion_pub = "deploy/salt_keys/minion.pub"
       end
     end
   end
