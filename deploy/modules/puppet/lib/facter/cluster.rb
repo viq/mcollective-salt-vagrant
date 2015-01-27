@@ -1,4 +1,4 @@
-if Facter.hostname =~ /(\d+)$/
+if Facter.value(:hostname) =~ /(\d+)$/
   hostname = $1.to_i
 
   # set this to the amount of clusters
