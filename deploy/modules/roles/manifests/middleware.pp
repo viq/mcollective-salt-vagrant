@@ -1,5 +1,8 @@
 class roles::middleware {
-  service{"iptables": ensure => stopped}
+  service{"iptables":
+    ensure => stopped,
+    enable => false
+  }
 
   class{"repos": } ->
 
