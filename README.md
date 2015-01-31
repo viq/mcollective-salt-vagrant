@@ -77,6 +77,7 @@ set the _INSTANCES_ variable to:
     2 replies max: 26.50 min: 25.18 avg: 25.84
 
 Salt commands need to be run as root:
+
     $ sudo salt \* test.ping
     node2:
         True
@@ -93,6 +94,7 @@ Salt commands need to be run as root:
 
 You can also get a report of who's responding and who isn't from the nodes
 master knows about:
+
     $ sudo salt-run manage.status
     down:
     up:
