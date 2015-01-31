@@ -1,10 +1,10 @@
 What?
 =====
 
-A quick way to get a mcollective network built for testing or evaluating MCollective.
+A quick way to get a mcollective network built for testing or evaluating MCollective, and compare the remote execution capabilities with [SaltStack](http://saltstack.com/)
 
 The network will consist of a single node that acts as a middleware server using
-Redis and a configurable amount of nodes under management.  On a 32GB machine I
+Redis and a salt master and a configurable amount of nodes under management.  On a 32GB machine I
 have no problem running 26 machines using this repository.
 
 This consists of a Vagrant file and a few **very** simple Puppet Modules that does the
@@ -25,14 +25,16 @@ This will setup the latest development MCollective along with the following plug
    * [Net Test Agent](https://github.com/puppetlabs/mcollective-nettest-agent)
    * [Request auditing](http://docs.puppetlabs.com/mcollective/simplerpc/auditing.html) enabled and logging to /var/log/mcollective-audit.log
 
+Also most Salt [modules](http://docs.saltstack.com/en/latest/ref/modules/all/index.html) are available.
+
 Setup?
 ------
 
 Assuming you have a working Vagrant setup on your system it should be real simple
 to get going:
 
-    $ git clone git://github.com/ripienaar/mcollective-vagrant.git
-    $ cd mcollective-vagrant
+    $ git clone git://github.com/viq/mcollective-salt-vagrant.git
+    $ cd mcollective-salt-vagrant
 
 You should now edit the Vagrantfile and adjust the constants at the top to your
 tastes:
@@ -43,7 +45,7 @@ tastes:
 Using?
 ------
 
-What follows is a whirlwind tour of MCollective where you can run these commands
+What follows is a whirlwind tour of MCollective and Salt where you can run these commands
 on this Vagrant setup to gain a sense of what it is about.
 
 MCollective is a framework that you can use to solve your own orchestration problems
@@ -57,6 +59,8 @@ a bunch of mature plugins for common needs which you will see here.
 At the end you will see a hint on the underlying structure of the RPC system and how
 you can interact with it from scripts and other systems. Links to further reading is
 at the end of the tour.
+
+For comparison, equivalent commands for Salt are listed.
 
 ### Verifying it works
 
@@ -72,6 +76,33 @@ set the _INSTANCES_ variable to:
     ---- ping statistics ----
     2 replies max: 26.50 min: 25.18 avg: 25.84
 
+Salt commands need to be run as root:
+    $ sudo salt \* test.ping
+    node2:
+        True
+    node3:
+        True
+    node1:
+        True
+    node0:
+        True
+    node4:
+        True
+    middleware:
+        True
+
+You can also get a report of who's responding and who isn't from the nodes
+master knows about:
+    $ sudo salt-run manage.status
+    down:
+    up:
+        - middleware
+        - node0
+        - node1
+        - node2
+        - node3
+        - node4
+
 ### Selecting machines to communicate with
 
 MCollective uses your Configuration Management system for addressing, as these machines
@@ -81,14 +112,24 @@ Just the nodes with the roles::middleware class:
 
     $ mco ping -W roles::middleware
 
+...or with grain (salt speak for facts) roles:middleware set:
+  
+    $ sudo salt -G roles:middleware test.ping
+
 ...and the nodes with the roles::node class
 
     $ mco ping -W roles::node
+
+... and again with salt
+
+    $ sudo salt -G roles:node test.ping
 
 ...and nodes that are middleware nodes with redis installed - matching based on
 regular expressions:
 
     $ mco ping -W "roles::middleware /redis/"
+
+There is no directly equivalent salt command.
 
 There are a number of facts on each machine but as the nodes are identical there are
 not much variance so we added a fact called _cluster_ that has some random data set:
@@ -101,14 +142,62 @@ not much variance so we added a fact called _cluster_ that has some random data 
 
     Finished processing 11 / 11 hosts in 49.67 ms
 
+And same grains set in salt, which we can get like so:
+
+    $ sudo salt \* grains.item cluster
+    node2:
+        ----------
+        cluster:
+            alpha
+    node4:
+        ----------
+        cluster:
+            alpha
+    node3:
+        ----------
+        cluster:
+            bravo
+    node0:
+        ----------
+        cluster:
+            alpha
+    middleware:
+        ----------
+    node1:
+        ----------
+        cluster:
+            bravo
+
+
 You can now combine this fact with Puppet Classes to pick a subset of your nodes, this
 is an _AND_ search:
 
     $ mco ping -W "roles::node cluster=alfa"
 
+...or with salt:
+
+    $ sudo salt -G cluster:alpha test.ping
+    node4:
+        True
+    node0:
+        True
+    node2:
+        True
+
 ...but you can do more complex things:
 
     $ mco ping -S "(roles::node or roles::middleware) and cluster=alfa"
+
+...and likewise with salt:
+
+    $ sudo salt -C "( G@roles:node or G@roles:middleware ) and G@cluster:alpha" test.ping
+    node4:
+        True
+    node0:
+        True
+    node2:
+        True
+
 
 These arguments tend to apply to most MCollective commands so any of the following commands
 you'll see can be limited by the use of these discovery filters.
@@ -116,6 +205,9 @@ you'll see can be limited by the use of these discovery filters.
 There are numerous other addressing methods - called discovery in MCollective - please
 read the [MCollective CLI Usage](http://docs.puppetlabs.com/mcollective/reference/basic/basic_cli_usage.html)
 documentation to see other ways.
+
+Salt also has multiple ways to filter what minions you want to address, described in detail in [Targeting
+Minions](http://docs.saltstack.com/en/latest/topics/targeting/index.html) document.
 
 ### Getting information about a node
 
@@ -163,6 +255,45 @@ knows with the _inventory_ command:
           .
           .
 
+Salt gathers similar information, though it's spread over a couple commands. Node information is kept in grains, which you can access using the _items_ function of [_grains_](http://docs.saltstack.com/en/latest/ref/modules/all/salt.modules.grains.html) module:
+
+    $ sudo salt middleware grains.items
+    middleware:
+        ----------
+        SSDs:
+        biosreleasedate:
+            12/01/2006
+        biosversion:
+            VirtualBox
+    .
+    .
+    cpuarch:
+        x86_64
+    .
+
+Most functionality on salt is provided via modules, list of modules available on a minion you can get using _list_modules_ function of [_sys_](http://docs.saltstack.com/en/latest/ref/modules/all/salt.modules.sysmod.html) module:
+    
+    $ sudo salt middleware sys.list_modules                                                                                                                                                                                                                                                                 
+    middleware:
+        - acl
+        - aliases
+        - alternatives
+        - archive
+        - blockdev
+        - bridge
+        - buildout
+        - chef
+        - cloud
+        - cmd
+        - composer
+        - config
+        - cp
+        - cron
+    .
+    .
+    .
+
+
 This is useful when debugging discovery issues or just to obtain information
 about a specific node.
 
@@ -188,6 +319,22 @@ report to produce ones for subsets of nodes:
 
 See [Node Reports](http://docs.puppetlabs.com/mcollective/reference/ui/nodereports.html)
 for more information on creating your own reports.
+
+Salt doesn't have reports as such, but you can get similiar information out of your nodes:
+    $ sudo salt \* grains.item os osrelease osarch num_cpus
+    node0:
+        ----------
+        num_cpus:
+            1
+        os:
+            CentOS
+        osarch:
+            x86_64
+        osrelease:
+            6.5
+    .
+    .
+    .
 
 ### Basic MCollective behaviour described
 
@@ -240,6 +387,37 @@ requested task, you can disable it using the *--np* or *--no-progress* arguments
 This is a key concept to understand in MCollective please see [this blog post](http://www.devco.net/archives/2010/08/28/effective_adhoc_commands_in_clusters.php)
 for rationale and background.
 
+Salt has similar capabilities, but without such convenient grouping. Comparable commands:
+
+    $ sudo salt \* service.restart nrpe                                                                                                                                                          
+    node2:
+        True
+    node3:
+        True
+    node1:
+        True
+    node4:
+        True
+    node0:
+        True
+    middleware:
+        True
+
+    $ sudo salt \* service.status nrpe                                                                                                                                                           
+    node2:
+        True
+    node3:
+        True
+    node1:
+        True
+    node0:
+        True
+    middleware:
+        True
+    node4:
+        True
+
+
 ### Managing Packages
 
     $ mco package status mcollective
@@ -265,6 +443,27 @@ You can also use this to install, update and upgrade packages on the systems see
 
 More information about the Package agent: [GitHub](https://github.com/puppetlabs/mcollective-package-agent#readme)
 
+Salt also allows you to work with packages, eg:
+    $ sudo salt \* pkg.version mcollective                                                                                                                                                       
+    middleware:
+        2.7.0-1.el6
+    node2:
+        2.7.0-1.el6
+    node4:
+        2.7.0-1.el6
+    node3:
+        2.7.0-1.el6
+    node1:
+        2.7.0-1.el6
+    node0:
+        2.7.0-1.el6
+
+You can read more about [yum package provider](http://docs.saltstack.com/en/latest/ref/modules/all/salt.modules.yumpkg.html),
+find other providers from [the list of modules](http://docs.saltstack.com/en/latest/ref/modules/all/index.html) or read the
+documentation for yours by running:
+
+    $ sudo salt middleware sys.doc pkg
+
 ### Managing Services
 
 The package and service applications behave almost identical so I won't show full output
@@ -280,6 +479,11 @@ The *package* and *service* managers use the Puppet provider system to do their 
 they support any OS Puppet does.
 
 More information about the Service agent: [GitHub](https://github.com/puppetlabs/mcollective-service-agent#readme)
+
+Salt’s information about service module: [service](http://docs.saltstack.com/en/latest/ref/modules/all/salt.modules.service.html)
+Matching command:
+
+    $ sudo salt \* service.status mcollective
 
 ### Testing network connectivity
 
@@ -300,9 +504,48 @@ You can easily test if machines are able to reach another host using the nettest
 
     Finished processing 2 / 2 hosts in 49.83 ms
 
+Same in salt, with _network_ module:
+
+    $ sudo salt -E 'node[0-2]' network.ping 192.168.2.10
+    node2:
+        PING 192.168.2.10 (192.168.2.10) 56(84) bytes of data.
+        64 bytes from 192.168.2.10: icmp_seq=1 ttl=64 time=0.047 ms
+        64 bytes from 192.168.2.10: icmp_seq=2 ttl=64 time=0.780 ms
+        64 bytes from 192.168.2.10: icmp_seq=3 ttl=64 time=0.245 ms
+        64 bytes from 192.168.2.10: icmp_seq=4 ttl=64 time=0.349 ms
+        
+        --- 192.168.2.10 ping statistics ---
+        4 packets transmitted, 4 received, 0% packet loss, time 3000ms
+        rtt min/avg/max/mdev = 0.047/0.355/0.780/0.268 ms
+    node1:
+        PING 192.168.2.10 (192.168.2.10) 56(84) bytes of data.
+        64 bytes from 192.168.2.10: icmp_seq=1 ttl=64 time=0.258 ms
+        64 bytes from 192.168.2.10: icmp_seq=2 ttl=64 time=0.421 ms
+        64 bytes from 192.168.2.10: icmp_seq=3 ttl=64 time=0.363 ms
+        64 bytes from 192.168.2.10: icmp_seq=4 ttl=64 time=0.430 ms
+        
+        --- 192.168.2.10 ping statistics ---
+        4 packets transmitted, 4 received, 0% packet loss, time 3000ms
+        rtt min/avg/max/mdev = 0.258/0.368/0.430/0.068 ms
+    node0:
+        PING 192.168.2.10 (192.168.2.10) 56(84) bytes of data.
+        64 bytes from 192.168.2.10: icmp_seq=1 ttl=64 time=0.224 ms
+        64 bytes from 192.168.2.10: icmp_seq=2 ttl=64 time=0.528 ms
+        64 bytes from 192.168.2.10: icmp_seq=3 ttl=64 time=0.349 ms
+        64 bytes from 192.168.2.10: icmp_seq=4 ttl=64 time=0.263 ms
+        
+        --- 192.168.2.10 ping statistics ---
+        4 packets transmitted, 4 received, 0% packet loss, time 3000ms
+        rtt min/avg/max/mdev = 0.224/0.341/0.528/0.117 ms
+
+
 Similarly you can also test if a TCP connection can be made:
 
     $ mco nettest connect 192.168.2.10 8140
+
+...or:
+
+    $ sudo salt \* network.connect 192.168.2.10 8140
 
 This command is best used with a discovery filter, imagine you suspect a machine in
 some VLAN is down, you can run ask other machines in that cluster to test it's availability
@@ -312,7 +555,16 @@ some VLAN is down, you can run ask other machines in that cluster to test it's a
 This will ask 20% of the machines in cluster=alfa to see if they can connect to the node
 in question.
 
+Or using salt:
+
+    $ sudo salt -G cluster:alpha --batch-size 20% network.ping 192.168.2.10
+
+This will ask machines with grain cluster set to alpha to ping the address, asking 20% of
+nodes at a time. The difference is, with salt all machines will do it, but in batches.
+
 More information about the nettest plugin: [GitHub](https://github.com/puppetlabs/mcollective-nettest-agent#readme)
+
+More information about the _network module_: [network module](http://docs.saltstack.com/en/latest/ref/modules/all/salt.modules.network.html)
 
 ### Doing monitoring checks
 
@@ -336,6 +588,9 @@ You can thus easily obtain real time monitoring results:
 Checks that are installed on this Vagrant setup are *check_load*, *check_disks* and *check_swap*.
 
 More information about the nrpe plugin: [GitHub](https://github.com/puppetlabs/mcollective-nrpe-agent#readme)
+
+Salt in theory does have _nagios module_: [nagios module](http://docs.saltstack.com/en/latest/ref/modules/all/salt.modules.nagios.html)
+Unfortunately there’s an open bug report which makes it unusable in this environment: [bug #10796](https://github.com/saltstack/salt/issues/10796)
 
 ### Network wide *pgrep*
 
@@ -371,6 +626,26 @@ The fields shown are configurable - see [the process agent](https://github.com/p
 
 More information about the process plugin: [GitHub](https://github.com/puppetlabs/mcollective-process-agent#readme)
 
+Salt has similiar functionality provided by the [ps module](http://docs.saltstack.com/en/latest/ref/modules/all/salt.modules.ps.html) though gives much less info, eg:
+
+    $ sudo salt \* ps.pgrep ruby full=true
+    node2:
+        - 1113
+    node3:
+        - 1113
+    node4:
+        - 1113
+    node1:
+        - 1113
+    node0:
+        - 1113
+    middleware:
+        - 1111
+        - 1311
+        - 8759
+        - 8760
+
+
 ### Testing website reachability
 
 You can test the reachability of a website quite easily:
@@ -392,6 +667,8 @@ You can test the reachability of a website quite easily:
          Total time taken: min: 5.4010 max: 5.4051 avg: 5.4030 sdev: 0.0029
 
 Here you can see DNS lookup time is a problem, my Vagrant machines tend to have DNS issues.
+
+As far as I know there's no equivalent salt module.
 
 ### Scripting and raw RPC
 
@@ -448,6 +725,9 @@ And finally you can easily write a small script to perform the same url test act
 
 If you put this in a script and ran it you should see familiar output.
 
+Salt allows you to run commands and scripts directly on machines via [cmd module](http://docs.saltstack.com/en/latest/ref/modules/all/salt.modules.cmdmod.html)
+All salt modules are written in python, and there's information on how to [write your own modules](http://docs.saltstack.com/en/latest/ref/modules/index.html)
+
 ### Auditing
 
 After you've run a bunch of commands from the list above take a look at the file _/var/log/mcollective-audit.log_
@@ -458,6 +738,9 @@ which is an audit log of all actions taken on a machine, there's an example belo
     2013-02-25T16:23:47.398020+0100: reqid=fbf93dc4e1605aba9fb7d4e5a6e3b993: reqtime=1361805827 caller=user=vagrant@middleware.example.net agent=nettest action=ping data={:process_results=>true, :fqdn=>"192.168.2.10"}
 
 You can provide your own Audit plugins, more information [here](http://docs.puppetlabs.com/mcollective/simplerpc/auditing.html)
+
+Salt has mainly two logs, _/var/log/salt/master_ on master, and _/var/log/salt/minion_ on every minion. There’s even more happening on Salt’s [event bus](http://docs.saltstack.com/en/latest/topics/event/index.html).
+You can write your own stuff to listen on the event bus, or you can use [salt-eventsd](https://github.com/felskrone/salt-eventsd)
 
 Further Reading?
 ---------------
