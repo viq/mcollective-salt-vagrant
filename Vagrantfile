@@ -39,6 +39,7 @@ Vagrant.configure("2") do |config|
     end
     vmconfig.vm.box = "centos_6_5_x86_64"
     vmconfig.vm.box_url = "http://developer.nrel.gov/downloads/vagrant-boxes/CentOS-6.5-x86_64-v20140504.box"
+    vmconfig.vm.synced_folder "deploy/salt/", "/srv/salt"
     vmconfig.vm.provision :hostmanager
     vmconfig.vm.provision :shell, :inline => $set_puppet_version
     vmconfig.vm.provision :puppet, :options => ["--pluginsync --hiera_config /vagrant/deploy/hiera.yaml"], :module_path => "deploy/modules", :facter => { "middleware_ip" => "#{SUBNET}.10" } do |puppet|
@@ -78,6 +79,7 @@ Vagrant.configure("2") do |config|
         salt.always_install = false
         salt.minion_key = "deploy/salt_keys/minion.pem"
         salt.minion_pub = "deploy/salt_keys/minion.pub"
+        salt.run_highstate = true
       end
     end
   end
