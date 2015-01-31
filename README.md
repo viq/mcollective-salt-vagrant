@@ -1,5 +1,6 @@
 What?
 =====
+Oiginally from https://github.com/ripienaar/mcollective-vagrant - modified to add SaltStack for comparison.
 
 A quick way to get a mcollective network built for testing or evaluating MCollective, and compare the remote execution capabilities with [SaltStack](http://saltstack.com/)
 
@@ -178,7 +179,7 @@ is an _AND_ search:
 
 ...or with salt:
 
-    $ sudo salt -G cluster:alpha test.ping
+    $ sudo salt -C ‘G@roles:node and G@cluster:alpha’ test.ping
     node4:
         True
     node0:
@@ -257,7 +258,9 @@ knows with the _inventory_ command:
           .
           .
 
-Salt gathers similar information, though it's spread over a couple commands. Node information is kept in grains, which you can access using the _items_ function of [_grains_](http://docs.saltstack.com/en/latest/ref/modules/all/salt.modules.grains.html) module:
+Salt gathers similar information, though it's spread over a couple commands.
+Node information is kept in grains, which you can access using the _items_ function of
+[_grains_](http://docs.saltstack.com/en/latest/ref/modules/all/salt.modules.grains.html) module:
 
     $ sudo salt middleware grains.items
     middleware:
@@ -273,7 +276,8 @@ Salt gathers similar information, though it's spread over a couple commands. Nod
         x86_64
     .
 
-Most functionality on salt is provided via modules, list of modules available on a minion you can get using _list_modules_ function of [_sys_](http://docs.saltstack.com/en/latest/ref/modules/all/salt.modules.sysmod.html) module:
+Most functionality on salt is provided via modules, list of modules available on a minion you can get using
+_list_modules_ function of [_sys_](http://docs.saltstack.com/en/latest/ref/modules/all/salt.modules.sysmod.html) module:
     
     $ sudo salt middleware sys.list_modules                                                                                                                                                                                                                                                                 
     middleware:
@@ -758,6 +762,19 @@ documentation to learn how to get going and what it is about:
   * [Writing Agents](http://docs.puppetlabs.com/mcollective/simplerpc/agents.html)
   * [Writing Clients](http://docs.puppetlabs.com/mcollective/simplerpc/clients.html)
 
+And here are some useful starting points for SaltStack, concentrating on the remote execution part:
+  * [Main documentation site](http://docs.saltstack.com/en/latest/)
+  * [List of modules](http://docs.saltstack.com/en/latest/ref/modules/all/index.html)
+  * [Remote execution tutorial](http://docs.saltstack.com/en/latest/topics/tutorials/modules.html)
+  * [List of all tutorials](http://docs.saltstack.com/en/latest/topics/tutorials/index.html)
+  * [Writing your own execution modules](http://docs.saltstack.com/en/latest/ref/modules/index.html)
+  * [Returiners](http://docs.saltstack.com/en/latest/ref/returners/index.html) which allow your minions to return information elsewhere
+  * [List of returners](http://docs.saltstack.com/en/latest/ref/modules/index.html)
+  * [Targeting](http://docs.saltstack.com/en/latest/topics/targeting/index.html#targeting) your minions
+  * [How to open firewall for salt](http://docs.saltstack.com/en/latest/topics/tutorials/firewall.html)
+
+
+
 Modifying?
 ----------
 
@@ -777,6 +794,8 @@ that directory and it would be available to all the machines.
 
 I'd love to see the various things like the Puppet setup done using proper modules from
 the forge so PRs would be appreciated
+
+Salt is set up using native Vagrant capabilities.
 
 Contact?
 --------
