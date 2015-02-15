@@ -171,6 +171,41 @@ And same grains set in salt, which we can get like so:
         cluster:
             bravo
 
+Or, to get a summary like mco does:
+
+    $ sudo salt-run survey.hash "*" grains.item cluster                                                                                                                                          
+    minion pool :
+    ------------
+    ['node0', 'node2', 'node4']
+    pool size :
+    ----------
+        3
+    pool result :
+    -------
+        {'cluster': 'alpha'}
+
+
+    minion pool :
+    ------------
+    ['node1', 'node3']
+    pool size :
+    ----------
+        2
+    pool result :
+    -------
+        {'cluster': 'bravo'}
+
+
+    minion pool :
+    ------------
+    ['middleware']
+    pool size :
+    ----------
+        1
+    pool result :
+    -------
+        {}
+
 
 You can now combine this fact with Puppet Classes to pick a subset of your nodes, this
 is an _AND_ search:
