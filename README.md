@@ -362,6 +362,7 @@ See [Node Reports](http://docs.puppetlabs.com/mcollective/reference/ui/noderepor
 for more information on creating your own reports.
 
 Salt doesn't have reports as such, but you can get similiar information out of your nodes:
+
     $ sudo salt \* grains.item os osrelease osarch num_cpus
     node0:
         ----------
