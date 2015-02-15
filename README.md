@@ -173,7 +173,7 @@ And same grains set in salt, which we can get like so:
 
 Or, to get a summary like mco does we can use [survey runner](http://docs.saltstack.com/en/latest/ref/runners/all/salt.runners.survey.html):
 
-    $ sudo salt-run survey.hash "*" grains.item cluster                                                                                                                                          
+    $ sudo salt-run survey.hash "*" grains.item cluster
     minion pool :
     ------------
     ['node0', 'node2', 'node4']
@@ -461,7 +461,7 @@ Salt has similar capabilities, but without such convenient grouping. Comparable 
 
 To see the results grouped you need to use the survey runner again:
 
-    $ sudo salt-run survey.hash "*" service.status nrpe                                                                                                                                          
+    $ sudo salt-run survey.hash "*" service.status nrpe
     minion pool :
     ------------
     ['node0', 'node1', 'node2', 'node3', 'node4']
