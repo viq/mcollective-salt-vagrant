@@ -314,7 +314,7 @@ Node information is kept in grains, which you can access using the _items_ funct
 Most functionality on salt is provided via modules, list of modules available on a minion you can get using
 _list_modules_ function of [_sys_](http://docs.saltstack.com/en/latest/ref/modules/all/salt.modules.sysmod.html) module:
     
-    $ sudo salt middleware sys.list_modules                                                                                                                                                                                                                                                                 
+    $ sudo salt middleware sys.list_modules
     middleware:
         - acl
         - aliases
@@ -431,7 +431,7 @@ for rationale and background.
 
 Salt has similar capabilities, but without such convenient grouping. Comparable commands:
 
-    $ sudo salt \* service.restart nrpe                                                                                                                                                          
+    $ sudo salt \* service.restart nrpe
     node2:
         True
     node3:
@@ -445,7 +445,7 @@ Salt has similar capabilities, but without such convenient grouping. Comparable 
     middleware:
         True
 
-    $ sudo salt \* service.status nrpe                                                                                                                                                           
+    $ sudo salt \* service.status nrpe
     node2:
         True
     node3:
