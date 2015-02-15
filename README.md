@@ -171,7 +171,7 @@ And same grains set in salt, which we can get like so:
         cluster:
             bravo
 
-Or, to get a summary like mco does:
+Or, to get a summary like mco does we can use [survey runner](http://docs.saltstack.com/en/latest/ref/runners/all/salt.runners.survey.html):
 
     $ sudo salt-run survey.hash "*" grains.item cluster                                                                                                                                          
     minion pool :
@@ -459,6 +459,30 @@ Salt has similar capabilities, but without such convenient grouping. Comparable 
     node4:
         True
 
+To see the results grouped you need to use the survey runner again:
+
+    $ sudo salt-run survey.hash "*" service.status nrpe                                                                                                                                          
+    minion pool :
+    ------------
+    ['node0', 'node1', 'node2', 'node3', 'node4']
+    pool size :
+    ----------
+        5
+    pool result :
+    -------
+        True
+
+
+    minion pool :
+    ------------
+    ['middleware']
+    pool size :
+    ----------
+        1
+    pool result :
+    -------
+        False
+
 
 ### Managing Packages
 
@@ -499,6 +523,20 @@ Salt also allows you to work with packages, eg:
         2.7.0-1.el6
     node0:
         2.7.0-1.el6
+
+...or, again using survey runner:
+
+    $ sudo salt-run survey.hash "*" pkg.version mcollective
+    minion pool :
+    ------------
+    ['middleware', 'node0', 'node1', 'node2', 'node3', 'node4']
+    pool size :
+    ----------
+        6
+    pool result :
+    -------
+        2.8.0-1.el6
+
 
 You can read more about [yum package provider](http://docs.saltstack.com/en/latest/ref/modules/all/salt.modules.yumpkg.html),
 find other providers from [the list of modules](http://docs.saltstack.com/en/latest/ref/modules/all/index.html) or read the
